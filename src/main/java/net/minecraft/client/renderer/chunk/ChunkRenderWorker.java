@@ -4,9 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CancellationException;
+import com.google.common.util.concurrent.MoreExecutors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RegionRenderCacheBuilder;
 import net.minecraft.crash.CrashReport;
@@ -15,15 +13,17 @@ import net.minecraft.util.EnumWorldBlockLayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ChunkRenderWorker implements Runnable
-{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+
+public class ChunkRenderWorker implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
     private final ChunkRenderDispatcher chunkRenderDispatcher;
     private final RegionRenderCacheBuilder regionRenderCacheBuilder;
 
-    public ChunkRenderWorker(ChunkRenderDispatcher p_i46201_1_)
-    {
-        this(p_i46201_1_, (RegionRenderCacheBuilder)null);
+    public ChunkRenderWorker(ChunkRenderDispatcher p_i46201_1_) {
+        this(p_i46201_1_, (RegionRenderCacheBuilder) null);
     }
 
     public ChunkRenderWorker(ChunkRenderDispatcher chunkRenderDispatcherIn, RegionRenderCacheBuilder regionRenderCacheBuilderIn)
@@ -178,16 +178,15 @@ public class ChunkRenderWorker implements Runnable
                     }
                     generator.getRenderChunk().setCompiledChunk(lvt_7_1_);
                 }
-                public void onFailure(Throwable p_onFailure_1_)
-                {
+
+                public void onFailure(Throwable p_onFailure_1_) {
                     ChunkRenderWorker.this.freeRenderBuilder(generator);
 
-                    if (!(p_onFailure_1_ instanceof CancellationException) && !(p_onFailure_1_ instanceof InterruptedException))
-                    {
+                    if (!(p_onFailure_1_ instanceof CancellationException) && !(p_onFailure_1_ instanceof InterruptedException)) {
                         Minecraft.getMinecraft().crashed(CrashReport.makeCrashReport(p_onFailure_1_, "Rendering chunk"));
                     }
                 }
-            });
+            }, MoreExecutors.directExecutor());
         }
     }
 

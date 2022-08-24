@@ -2,33 +2,19 @@ package net.minecraft.block.state;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.util.Cartesian;
+import net.minecraft.util.CartesianProductUtil;
 import net.minecraft.util.MapPopulator;
 
-public class BlockState
-{
+import java.util.*;
+
+public class BlockState {
     private static final Joiner COMMA_JOINER = Joiner.on(", ");
-    private static final Function<IProperty, String> GET_NAME_FUNC = new Function<IProperty, String>()
-    {
-        public String apply(IProperty p_apply_1_)
-        {
+    private static final Function<IProperty, String> GET_NAME_FUNC = new Function<IProperty, String>() {
+        public String apply(IProperty p_apply_1_) {
             return p_apply_1_ == null ? "<NULL>" : p_apply_1_.getName();
         }
     };
@@ -50,8 +36,7 @@ public class BlockState
         Map<Map<IProperty, Comparable>, BlockState.StateImplementation> map = Maps.<Map<IProperty, Comparable>, BlockState.StateImplementation>newLinkedHashMap();
         List<BlockState.StateImplementation> list = Lists.<BlockState.StateImplementation>newArrayList();
 
-        for (List<Comparable> list1 : Cartesian.cartesianProduct(this.getAllowedValues()))
-        {
+        for (List<Comparable> list1 : CartesianProductUtil.cartesianProduct(this.getAllowedValues())) {
             Map<IProperty, Comparable> map1 = MapPopulator.<IProperty, Comparable>createMap(this.properties, list1);
             BlockState.StateImplementation blockstate$stateimplementation = new BlockState.StateImplementation(blockIn, ImmutableMap.copyOf(map1));
             map.put(map1, blockstate$stateimplementation);
@@ -100,7 +85,7 @@ public class BlockState
 
     public String toString()
     {
-        return Objects.toStringHelper(this).add("block", Block.blockRegistry.getNameForObject(this.block)).add("properties", Iterables.transform(this.properties, GET_NAME_FUNC)).toString();
+        return MoreObjects.toStringHelper(this).add("block", Block.blockRegistry.getNameForObject(this.block)).add("properties", Iterables.transform(this.properties, GET_NAME_FUNC)).toString();
     }
 
     static class StateImplementation extends BlockStateBase

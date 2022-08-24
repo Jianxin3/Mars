@@ -2,12 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.gson.JsonSyntaxException;
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Callable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.material.Material;
@@ -25,8 +19,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.client.shader.ShaderGroup;
-import net.minecraft.client.shader.ShaderLinkHelper;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -34,27 +26,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.BossStatus;
 import net.minecraft.entity.item.EntityItemFrame;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MouseFilter;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -65,6 +43,11 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.Project;
+
+import java.nio.FloatBuffer;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
 
 public class EntityRenderer implements IResourceManagerReloadListener
 {
@@ -171,7 +154,6 @@ public class EntityRenderer implements IResourceManagerReloadListener
     private double cameraZoom = 1.0D;
     private double cameraYaw;
     private double cameraPitch;
-    private ShaderGroup theShaderGroup;
     private static final ResourceLocation[] shaderResourceLocations = new ResourceLocation[] {new ResourceLocation("shaders/post/notch.json"), new ResourceLocation("shaders/post/fxaa.json"), new ResourceLocation("shaders/post/art.json"), new ResourceLocation("shaders/post/bumpy.json"), new ResourceLocation("shaders/post/blobs2.json"), new ResourceLocation("shaders/post/pencil.json"), new ResourceLocation("shaders/post/color_convolve.json"), new ResourceLocation("shaders/post/deconverge.json"), new ResourceLocation("shaders/post/flip.json"), new ResourceLocation("shaders/post/invert.json"), new ResourceLocation("shaders/post/ntsc.json"), new ResourceLocation("shaders/post/outline.json"), new ResourceLocation("shaders/post/phosphor.json"), new ResourceLocation("shaders/post/scan_pincushion.json"), new ResourceLocation("shaders/post/sobel.json"), new ResourceLocation("shaders/post/bits.json"), new ResourceLocation("shaders/post/desaturate.json"), new ResourceLocation("shaders/post/green.json"), new ResourceLocation("shaders/post/blur.json"), new ResourceLocation("shaders/post/wobble.json"), new ResourceLocation("shaders/post/blobs.json"), new ResourceLocation("shaders/post/antialias.json"), new ResourceLocation("shaders/post/creeper.json"), new ResourceLocation("shaders/post/spider.json")};
     public static final int shaderCount = shaderResourceLocations.length;
     private int shaderIndex;
@@ -190,7 +172,6 @@ public class EntityRenderer implements IResourceManagerReloadListener
         this.lightmapTexture = new DynamicTexture(16, 16);
         this.locationLightMap = mcIn.getTextureManager().getDynamicTextureLocation("lightMap", this.lightmapTexture);
         this.lightmapColors = this.lightmapTexture.getTextureData();
-        this.theShaderGroup = null;
 
         for (int i = 0; i < 32; ++i)
         {
@@ -204,133 +185,11 @@ public class EntityRenderer implements IResourceManagerReloadListener
             }
         }
     }
-
-    public boolean isShaderActive()
-    {
-        return OpenGlHelper.shadersSupported && this.theShaderGroup != null;
-    }
-
-    public void stopUseShader()
-    {
-        if (this.theShaderGroup != null)
-        {
-            this.theShaderGroup.deleteShaderGroup();
-        }
-
-        this.theShaderGroup = null;
-        this.shaderIndex = shaderCount;
-    }
-
-    public void switchUseShader()
-    {
-        this.useShader = !this.useShader;
-    }
-
-    /**
-     * What shader to use when spectating this entity
-     */
-    public void loadEntityShader(Entity entityIn)
-    {
-        if (OpenGlHelper.shadersSupported)
-        {
-            if (this.theShaderGroup != null)
-            {
-                this.theShaderGroup.deleteShaderGroup();
-            }
-
-            this.theShaderGroup = null;
-
-            if (entityIn instanceof EntityCreeper)
-            {
-                this.loadShader(new ResourceLocation("shaders/post/creeper.json"));
-            }
-            else if (entityIn instanceof EntitySpider)
-            {
-                this.loadShader(new ResourceLocation("shaders/post/spider.json"));
-            }
-            else if (entityIn instanceof EntityEnderman)
-            {
-                this.loadShader(new ResourceLocation("shaders/post/invert.json"));
-            }
-        }
-    }
-
-    public void activateNextShader()
-    {
-        if (OpenGlHelper.shadersSupported)
-        {
-            if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
-            {
-                if (this.theShaderGroup != null)
-                {
-                    this.theShaderGroup.deleteShaderGroup();
-                }
-
-                this.shaderIndex = (this.shaderIndex + 1) % (shaderResourceLocations.length + 1);
-
-                if (this.shaderIndex != shaderCount)
-                {
-                    this.loadShader(shaderResourceLocations[this.shaderIndex]);
-                }
-                else
-                {
-                    this.theShaderGroup = null;
-                }
-            }
-        }
-    }
-
-    private void loadShader(ResourceLocation resourceLocationIn)
-    {
-        try
-        {
-            this.theShaderGroup = new ShaderGroup(this.mc.getTextureManager(), this.resourceManager, this.mc.getFramebuffer(), resourceLocationIn);
-            this.theShaderGroup.createBindFramebuffers(this.mc.displayWidth, this.mc.displayHeight);
-            this.useShader = true;
-        }
-        catch (IOException ioexception)
-        {
-            logger.warn((String)("Failed to load shader: " + resourceLocationIn), (Throwable)ioexception);
-            this.shaderIndex = shaderCount;
-            this.useShader = false;
-        }
-        catch (JsonSyntaxException jsonsyntaxexception)
-        {
-            logger.warn((String)("Failed to load shader: " + resourceLocationIn), (Throwable)jsonsyntaxexception);
-            this.shaderIndex = shaderCount;
-            this.useShader = false;
-        }
-    }
-
-    public void onResourceManagerReload(IResourceManager resourceManager)
-    {
-        if (this.theShaderGroup != null)
-        {
-            this.theShaderGroup.deleteShaderGroup();
-        }
-
-        this.theShaderGroup = null;
-
-        if (this.shaderIndex != shaderCount)
-        {
-            this.loadShader(shaderResourceLocations[this.shaderIndex]);
-        }
-        else
-        {
-            this.loadEntityShader(this.mc.getRenderViewEntity());
-        }
-    }
-
     /**
      * Updates the entity renderer
      */
     public void updateRenderer()
     {
-        if (OpenGlHelper.shadersSupported && ShaderLinkHelper.getStaticShaderLinkHelper() == null)
-        {
-            ShaderLinkHelper.setNewStaticShaderLinkHelper();
-        }
-
         this.updateFovModifierHand();
         this.updateTorchFlicker();
         this.fogColor2 = this.fogColor1;
@@ -382,24 +241,6 @@ public class EntityRenderer implements IResourceManagerReloadListener
         else if (this.bossColorModifier > 0.0F)
         {
             this.bossColorModifier -= 0.0125F;
-        }
-    }
-
-    public ShaderGroup getShaderGroup()
-    {
-        return this.theShaderGroup;
-    }
-
-    public void updateShaderGroupSize(int width, int height)
-    {
-        if (OpenGlHelper.shadersSupported)
-        {
-            if (this.theShaderGroup != null)
-            {
-                this.theShaderGroup.createBindFramebuffers(width, height);
-            }
-
-            this.mc.renderGlobal.createBindEntityOutlineFbs(width, height);
         }
     }
 
@@ -1144,22 +985,6 @@ public class EntityRenderer implements IResourceManagerReloadListener
                 long l = Math.max((long)(1000000000 / j / 4) - k, 0L);
                 this.renderWorld(partialTicks, System.nanoTime() + l);
 
-                if (OpenGlHelper.shadersSupported)
-                {
-                    this.mc.renderGlobal.renderEntityOutlineFramebuffer();
-
-                    if (this.theShaderGroup != null && this.useShader)
-                    {
-                        GlStateManager.matrixMode(5890);
-                        GlStateManager.pushMatrix();
-                        GlStateManager.loadIdentity();
-                        this.theShaderGroup.loadShaderGroup(partialTicks);
-                        GlStateManager.popMatrix();
-                    }
-
-                    this.mc.getFramebuffer().bindFramebuffer(true);
-                }
-
                 this.renderEndNanoTime = System.nanoTime();
                 this.mc.mcProfiler.endStartSection("gui");
 
@@ -1224,7 +1049,6 @@ public class EntityRenderer implements IResourceManagerReloadListener
     public void renderStreamIndicator(float partialTicks)
     {
         this.setupOverlayRendering();
-        this.mc.ingameGUI.renderStreamIndicator(new ScaledResolution(this.mc));
     }
 
     private boolean isDrawBlockOutline()
@@ -2043,8 +1867,12 @@ public class EntityRenderer implements IResourceManagerReloadListener
         return this.fogColorBuffer;
     }
 
-    public MapItemRenderer getMapItemRenderer()
-    {
+    public MapItemRenderer getMapItemRenderer() {
         return this.theMapItemRenderer;
+    }
+
+    @Override
+    public void onResourceManagerReload(IResourceManager resourceManager) {
+
     }
 }

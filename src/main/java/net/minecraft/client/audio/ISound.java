@@ -22,20 +22,17 @@ public interface ISound
 
     ISound.AttenuationType getAttenuationType();
 
-    public static enum AttenuationType
-    {
+    public static enum AttenuationType {
         NONE(0),
-        LINEAR(2);
+        LINEAR(1);
 
         private final int type;
 
-        private AttenuationType(int typeIn)
-        {
+        private AttenuationType(int typeIn) {
             this.type = typeIn;
         }
 
-        public int getTypeInt()
-        {
+        public int getTypeInt() {
             return this.type;
         }
     }

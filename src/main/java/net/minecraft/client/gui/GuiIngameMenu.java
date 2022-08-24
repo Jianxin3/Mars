@@ -1,11 +1,11 @@
 package net.minecraft.client.gui;
 
-import java.io.IOException;
 import net.minecraft.client.gui.achievement.GuiAchievements;
 import net.minecraft.client.gui.achievement.GuiStats;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.realms.RealmsBridge;
+
+import java.io.IOException;
 
 public class GuiIngameMenu extends GuiScreen
 {
@@ -35,7 +35,7 @@ public class GuiIngameMenu extends GuiScreen
         this.buttonList.add(guibutton = new GuiButton(7, this.width / 2 + 2, this.height / 4 + 96 + i, 98, 20, I18n.format("menu.shareToLan", new Object[0])));
         this.buttonList.add(new GuiButton(5, this.width / 2 - 100, this.height / 4 + 48 + i, 98, 20, I18n.format("gui.achievements", new Object[0])));
         this.buttonList.add(new GuiButton(6, this.width / 2 + 2, this.height / 4 + 48 + i, 98, 20, I18n.format("gui.stats", new Object[0])));
-        guibutton.enabled = this.mc.isSingleplayer() && !this.mc.getIntegratedServer().getPublic();
+        guibutton.enabled = false;
     }
 
     /**
@@ -56,17 +56,9 @@ public class GuiIngameMenu extends GuiScreen
                 this.mc.theWorld.sendQuittingDisconnectingPacket();
                 this.mc.loadWorld((WorldClient)null);
 
-                if (flag)
-                {
+                if (flag) {
                     this.mc.displayGuiScreen(new GuiMainMenu());
-                }
-                else if (flag1)
-                {
-                    RealmsBridge realmsbridge = new RealmsBridge();
-                    realmsbridge.switchToRealms(new GuiMainMenu());
-                }
-                else
-                {
+                } else {
                     this.mc.displayGuiScreen(new GuiMultiplayer(new GuiMainMenu()));
                 }
 
@@ -87,9 +79,6 @@ public class GuiIngameMenu extends GuiScreen
             case 6:
                 this.mc.displayGuiScreen(new GuiStats(this, this.mc.thePlayer.getStatFileWriter()));
                 break;
-
-            case 7:
-                this.mc.displayGuiScreen(new GuiShareToLan(this));
         }
     }
 

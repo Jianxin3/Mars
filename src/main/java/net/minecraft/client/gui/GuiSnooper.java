@@ -1,17 +1,19 @@
 package net.minecraft.client.gui;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.TreeMap;
-import java.util.Map.Entry;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
 
-public class GuiSnooper extends GuiScreen
-{
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+public class GuiSnooper extends GuiScreen {
     private final GuiScreen field_146608_a;
 
-    /** Reference to the GameSettings object. */
+    /**
+     * Reference to the GameSettings object.
+     */
     private final GameSettings game_settings_2;
     private final java.util.List<String> field_146604_g = Lists.<String>newArrayList();
     private final java.util.List<String> field_146609_h = Lists.<String>newArrayList();
@@ -46,21 +48,11 @@ public class GuiSnooper extends GuiScreen
         this.field_146609_h.clear();
         this.buttonList.add(this.field_146605_t = new GuiButton(1, this.width / 2 - 152, this.height - 30, 150, 20, this.game_settings_2.getKeyBinding(GameSettings.Options.SNOOPER_ENABLED)));
         this.buttonList.add(new GuiButton(2, this.width / 2 + 2, this.height - 30, 150, 20, I18n.format("gui.done", new Object[0])));
-        boolean flag = this.mc.getIntegratedServer() != null && this.mc.getIntegratedServer().getPlayerUsageSnooper() != null;
 
         for (Entry<String, String> entry : (new TreeMap<String, String>(this.mc.getPlayerUsageSnooper().getCurrentStats())).entrySet())
         {
-            this.field_146604_g.add((flag ? "C " : "") + (String)entry.getKey());
-            this.field_146609_h.add(this.fontRendererObj.trimStringToWidth((String)entry.getValue(), this.width - 220));
-        }
-
-        if (flag)
-        {
-            for (Entry<String, String> entry1 : (new TreeMap<String, String>(this.mc.getIntegratedServer().getPlayerUsageSnooper().getCurrentStats())).entrySet())
-            {
-                this.field_146604_g.add("S " + (String)entry1.getKey());
-                this.field_146609_h.add(this.fontRendererObj.trimStringToWidth((String)entry1.getValue(), this.width - 220));
-            }
+            this.field_146604_g.add(entry.getKey());
+            this.field_146609_h.add(this.fontRendererObj.trimStringToWidth((String) entry.getValue(), this.width - 220));
         }
 
         this.field_146606_s = new GuiSnooper.List();

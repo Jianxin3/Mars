@@ -3,20 +3,7 @@ package net.minecraft.client.gui;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.awt.Toolkit;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.stream.GuiTwitchUserMode;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -42,7 +29,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import tv.twitch.chat.ChatUserInfo;
+
+import java.awt.*;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public abstract class GuiScreen extends Gui implements GuiYesNoCallback
 {
@@ -449,19 +448,6 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
                 else if (clickevent.getAction() == ClickEvent.Action.RUN_COMMAND)
                 {
                     this.sendChatMessage(clickevent.getValue(), false);
-                }
-                else if (clickevent.getAction() == ClickEvent.Action.TWITCH_USER_INFO)
-                {
-                    ChatUserInfo chatuserinfo = this.mc.getTwitchStream().func_152926_a(clickevent.getValue());
-
-                    if (chatuserinfo != null)
-                    {
-                        this.mc.displayGuiScreen(new GuiTwitchUserMode(this.mc.getTwitchStream(), chatuserinfo));
-                    }
-                    else
-                    {
-                        LOGGER.error("Tried to handle twitch user but couldn\'t find them!");
-                    }
                 }
                 else
                 {

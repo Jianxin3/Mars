@@ -1,9 +1,6 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Sets;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -24,23 +21,25 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldSettings;
+import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.storage.SaveDataMemoryStorage;
 import net.minecraft.world.storage.SaveHandlerMP;
 import net.minecraft.world.storage.WorldInfo;
 
-public class WorldClient extends World
-{
-    /** The packets that need to be sent to the server. */
+import java.util.Random;
+import java.util.Set;
+
+public class WorldClient extends World {
+    /**
+     * The packets that need to be sent to the server.
+     */
     private NetHandlerPlayClient sendQueue;
 
-    /** The ChunkProviderClient instance */
+    /**
+     * The ChunkProviderClient instance
+     */
     private ChunkProviderClient clientChunkProvider;
     private final Set<Entity> entityList = Sets.<Entity>newHashSet();
     private final Set<Entity> entitySpawnQueue = Sets.<Entity>newHashSet();
@@ -385,37 +384,12 @@ public class WorldClient extends World
     /**
      * Adds some basic stats of the world to the given crash report.
      */
-    public CrashReportCategory addWorldInfoToCrashReport(CrashReport report)
-    {
+    public CrashReportCategory addWorldInfoToCrashReport(CrashReport report) {
         CrashReportCategory crashreportcategory = super.addWorldInfoToCrashReport(report);
-        crashreportcategory.addCrashSectionCallable("Forced entities", new Callable<String>()
-        {
-            public String call()
-            {
-                return WorldClient.this.entityList.size() + " total; " + WorldClient.this.entityList.toString();
-            }
-        });
-        crashreportcategory.addCrashSectionCallable("Retry entities", new Callable<String>()
-        {
-            public String call()
-            {
-                return WorldClient.this.entitySpawnQueue.size() + " total; " + WorldClient.this.entitySpawnQueue.toString();
-            }
-        });
-        crashreportcategory.addCrashSectionCallable("Server brand", new Callable<String>()
-        {
-            public String call() throws Exception
-            {
-                return WorldClient.this.mc.thePlayer.getClientBrand();
-            }
-        });
-        crashreportcategory.addCrashSectionCallable("Server type", new Callable<String>()
-        {
-            public String call() throws Exception
-            {
-                return WorldClient.this.mc.getIntegratedServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server";
-            }
-        });
+        crashreportcategory.addCrashSectionCallable("Forced entities", () -> WorldClient.this.entityList.size() + " total; " + WorldClient.this.entityList);
+        crashreportcategory.addCrashSectionCallable("Retry entities", () -> WorldClient.this.entitySpawnQueue.size() + " total; " + WorldClient.this.entitySpawnQueue);
+        crashreportcategory.addCrashSectionCallable("Server brand", () -> WorldClient.this.mc.thePlayer.getClientBrand());
+        crashreportcategory.addCrashSectionCallable("Server type", () -> "Non-integrated multiplayer server");
         return crashreportcategory;
     }
 

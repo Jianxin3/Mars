@@ -1,5 +1,7 @@
 package net.minecraft.util;
 
+import com.aparapi.Kernel;
+
 import java.util.Random;
 import java.util.UUID;
 
@@ -10,7 +12,7 @@ public class MathHelper
     /**
      * A table of sin values computed from 0 (inclusive) to 2*pi (exclusive), with steps of 2*PI / 65536.
      */
-    private static final float[] SIN_TABLE = new float[65536];
+    private static final float[] SIN_TABLE;
 
     /**
      * Though it looks like an array, this is really more like a mapping.  Key (index of this array) is the upper 5 bits
@@ -541,24 +543,52 @@ public class MathHelper
         return j << 16 | k << 8 | l;
     }
 
-    static
-    {
-        for (int i = 0; i < 65536; ++i)
-        {
-            SIN_TABLE[i] = (float)Math.sin((double)i * Math.PI * 2.0D / 65536.0D);
-        }
+    static {
+//        for (int i = 0; i < 65536; ++i)
+//        {
+//            SIN_TABLE[i] = (float)Math.sin((double)i * Math.PI * 2.0D / 65536.0D);
+//        }
+        float[] sinValues = new float[65536];
 
-        multiplyDeBruijnBitPosition = new int[] {0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
+        Kernel sinTable = new Kernel() {
+            @Override
+            public void run() {
+                int i = getGlobalId();
+                sinValues[i] = (float) this.sin((double) i * Math.PI * 2.0D / 65536.0D);
+            }
+        };
+        sinTable.execute(65536);
+        sinTable.dispose();
+        SIN_TABLE = sinValues;
+
+        multiplyDeBruijnBitPosition = new int[]{0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
         field_181163_d = Double.longBitsToDouble(4805340802404319232L);
-        field_181164_e = new double[257];
-        field_181165_f = new double[257];
+        double[] field_181164_e_ = new double[257];
+        double[] field_181165_f_ = new double[257];
 
-        for (int j = 0; j < 257; ++j)
-        {
-            double d0 = (double)j / 256.0D;
-            double d1 = Math.asin(d0);
-            field_181165_f[j] = Math.cos(d1);
-            field_181164_e[j] = d1;
-        }
+//        for (int j = 0; j < 257; ++j)
+//        {
+//            double d0 = (double)j / 256.0D;
+//            double d1 = Math.asin(d0);
+//            field_181165_f[j] = Math.cos(d1);
+//            field_181164_e[j] = d1;
+//        }
+
+        Kernel compute = new Kernel() {
+            @Override
+            public void run() {
+                int j = getGlobalId();
+                double d0 = (double) j / 256.0D;
+                double d1 = asin(d0);
+                field_181165_f_[j] = cos(d1);
+                field_181164_e_[j] = d1;
+            }
+        };
+
+        compute.execute(257);
+        compute.dispose();
+
+        field_181164_e = field_181164_e_;
+        field_181165_f = field_181165_f_;
     }
 }

@@ -1,21 +1,16 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.primitives.Floats;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Comparator;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.MathHelper;
 import org.apache.logging.log4j.LogManager;
 
-public class WorldRenderer
-{
+import java.nio.*;
+import java.util.Arrays;
+import java.util.BitSet;
+
+public class WorldRenderer {
     private ByteBuffer byteBuffer;
     private IntBuffer rawIntBuffer;
     private ShortBuffer rawShortBuffer;
@@ -80,13 +75,7 @@ public class WorldRenderer
             ainteger[k] = Integer.valueOf(k);
         }
 
-        Arrays.sort(ainteger, new Comparator<Integer>()
-        {
-            public int compare(Integer p_compare_1_, Integer p_compare_2_)
-            {
-                return Floats.compare(afloat[p_compare_2_.intValue()], afloat[p_compare_1_.intValue()]);
-            }
-        });
+        Arrays.sort(ainteger, (p_compare_1_, p_compare_2_) -> Floats.compare(afloat[p_compare_2_.intValue()], afloat[p_compare_1_.intValue()]));
         BitSet bitset = new BitSet();
         int l = this.vertexFormat.getNextOffset();
         int[] aint = new int[l];

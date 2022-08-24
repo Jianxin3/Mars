@@ -3,22 +3,7 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonSyntaxException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockEnderChest;
-import net.minecraft.block.BlockSign;
-import net.minecraft.block.BlockSkull;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -26,13 +11,7 @@ import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
-import net.minecraft.client.renderer.chunk.CompiledChunk;
-import net.minecraft.client.renderer.chunk.IRenderChunkFactory;
-import net.minecraft.client.renderer.chunk.ListChunkFactory;
-import net.minecraft.client.renderer.chunk.RenderChunk;
-import net.minecraft.client.renderer.chunk.VboChunkFactory;
-import net.minecraft.client.renderer.chunk.VisGraph;
+import net.minecraft.client.renderer.chunk.*;
 import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.client.renderer.culling.ClippingHelperImpl;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -48,9 +27,6 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.client.shader.ShaderGroup;
-import net.minecraft.client.shader.ShaderLinkHelper;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
@@ -64,19 +40,7 @@ import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemRecord;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ClassInheritanceMultiMap;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Matrix4f;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vector3d;
+import net.minecraft.util.*;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.Chunk;
@@ -85,6 +49,9 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
+
+import java.util.*;
+import java.util.concurrent.Callable;
 
 public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListener
 {
@@ -127,10 +94,6 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
     private final Map<Integer, DestroyBlockProgress> damagedBlocks = Maps.<Integer, DestroyBlockProgress>newHashMap();
     private final Map<BlockPos, ISound> mapSoundPositions = Maps.<BlockPos, ISound>newHashMap();
     private final TextureAtlasSprite[] destroyBlockIcons = new TextureAtlasSprite[10];
-    private Framebuffer entityOutlineFramebuffer;
-
-    /** Stores the shader group for the entity_outline shader */
-    private ShaderGroup entityOutlineShader;
     private double frustumUpdatePosX = Double.MIN_VALUE;
     private double frustumUpdatePosY = Double.MIN_VALUE;
     private double frustumUpdatePosZ = Double.MIN_VALUE;
@@ -211,62 +174,6 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
         {
             this.destroyBlockIcons[i] = texturemap.getAtlasSprite("minecraft:blocks/destroy_stage_" + i);
         }
-    }
-
-    /**
-     * Creates the entity outline shader to be stored in RenderGlobal.entityOutlineShader
-     */
-    public void makeEntityOutlineShader()
-    {
-        if (OpenGlHelper.shadersSupported)
-        {
-            if (ShaderLinkHelper.getStaticShaderLinkHelper() == null)
-            {
-                ShaderLinkHelper.setNewStaticShaderLinkHelper();
-            }
-
-            ResourceLocation resourcelocation = new ResourceLocation("shaders/post/entity_outline.json");
-
-            try
-            {
-                this.entityOutlineShader = new ShaderGroup(this.mc.getTextureManager(), this.mc.getResourceManager(), this.mc.getFramebuffer(), resourcelocation);
-                this.entityOutlineShader.createBindFramebuffers(this.mc.displayWidth, this.mc.displayHeight);
-                this.entityOutlineFramebuffer = this.entityOutlineShader.getFramebufferRaw("final");
-            }
-            catch (IOException ioexception)
-            {
-                logger.warn((String)("Failed to load shader: " + resourcelocation), (Throwable)ioexception);
-                this.entityOutlineShader = null;
-                this.entityOutlineFramebuffer = null;
-            }
-            catch (JsonSyntaxException jsonsyntaxexception)
-            {
-                logger.warn((String)("Failed to load shader: " + resourcelocation), (Throwable)jsonsyntaxexception);
-                this.entityOutlineShader = null;
-                this.entityOutlineFramebuffer = null;
-            }
-        }
-        else
-        {
-            this.entityOutlineShader = null;
-            this.entityOutlineFramebuffer = null;
-        }
-    }
-
-    public void renderEntityOutlineFramebuffer()
-    {
-        if (this.isRenderEntityOutlines())
-        {
-            GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(770, 771, 0, 1);
-            this.entityOutlineFramebuffer.framebufferRenderExt(this.mc.displayWidth, this.mc.displayHeight, false);
-            GlStateManager.disableBlend();
-        }
-    }
-
-    protected boolean isRenderEntityOutlines()
-    {
-        return this.entityOutlineFramebuffer != null && this.entityOutlineShader != null && this.mc.thePlayer != null && this.mc.thePlayer.isSpectator() && this.mc.gameSettings.keyBindSpectatorOutlines.isKeyDown();
     }
 
     private void generateSky2()
@@ -542,17 +449,6 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
         this.renderDispatcher.stopChunkUpdates();
     }
 
-    public void createBindEntityOutlineFbs(int width, int height)
-    {
-        if (OpenGlHelper.shadersSupported)
-        {
-            if (this.entityOutlineShader != null)
-            {
-                this.entityOutlineShader.createBindFramebuffers(width, height);
-            }
-        }
-    }
-
     public void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks)
     {
         if (this.renderEntitiesStartupCounter > 0)
@@ -592,43 +488,6 @@ public class RenderGlobal implements IWorldAccess, IResourceManagerReloadListene
                 {
                     this.renderManager.renderEntitySimple(entity1, partialTicks);
                 }
-            }
-
-            if (this.isRenderEntityOutlines())
-            {
-                GlStateManager.depthFunc(519);
-                GlStateManager.disableFog();
-                this.entityOutlineFramebuffer.framebufferClear();
-                this.entityOutlineFramebuffer.bindFramebuffer(false);
-                this.theWorld.theProfiler.endStartSection("entityOutlines");
-                RenderHelper.disableStandardItemLighting();
-                this.renderManager.setRenderOutlines(true);
-
-                for (int j = 0; j < list.size(); ++j)
-                {
-                    Entity entity3 = (Entity)list.get(j);
-                    boolean flag = this.mc.getRenderViewEntity() instanceof EntityLivingBase && ((EntityLivingBase)this.mc.getRenderViewEntity()).isPlayerSleeping();
-                    boolean flag1 = entity3.isInRangeToRender3d(d0, d1, d2) && (entity3.ignoreFrustumCheck || camera.isBoundingBoxInFrustum(entity3.getEntityBoundingBox()) || entity3.riddenByEntity == this.mc.thePlayer) && entity3 instanceof EntityPlayer;
-
-                    if ((entity3 != this.mc.getRenderViewEntity() || this.mc.gameSettings.thirdPersonView != 0 || flag) && flag1)
-                    {
-                        this.renderManager.renderEntitySimple(entity3, partialTicks);
-                    }
-                }
-
-                this.renderManager.setRenderOutlines(false);
-                RenderHelper.enableStandardItemLighting();
-                GlStateManager.depthMask(false);
-                this.entityOutlineShader.loadShaderGroup(partialTicks);
-                GlStateManager.enableLighting();
-                GlStateManager.depthMask(true);
-                this.mc.getFramebuffer().bindFramebuffer(false);
-                GlStateManager.enableFog();
-                GlStateManager.enableBlend();
-                GlStateManager.enableColorMaterial();
-                GlStateManager.depthFunc(515);
-                GlStateManager.enableDepth();
-                GlStateManager.enableAlpha();
             }
 
             this.theWorld.theProfiler.endStartSection("entities");

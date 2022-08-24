@@ -3,9 +3,6 @@ package net.minecraft.client.gui;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -32,18 +29,14 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.FoodStats;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StringUtils;
+import net.minecraft.util.*;
 import net.minecraft.world.border.WorldBorder;
 
-public class GuiIngame extends Gui
-{
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+
+public class GuiIngame extends Gui {
     private static final ResourceLocation vignetteTexPath = new ResourceLocation("textures/misc/vignette.png");
     private static final ResourceLocation widgetsTexPath = new ResourceLocation("textures/gui/widgets.png");
     private static final ResourceLocation pumpkinBlurTexPath = new ResourceLocation("textures/misc/pumpkinblur.png");
@@ -53,7 +46,6 @@ public class GuiIngame extends Gui
 
     /** ChatGUI instance that retains all previous chat data */
     private final GuiNewChat persistantChatGUI;
-    private final GuiStreamIndicator streamIndicator;
     private int updateCounter;
 
     /** The string specifying which record music is playing */
@@ -110,7 +102,6 @@ public class GuiIngame extends Gui
         this.overlayDebug = new GuiOverlayDebug(mcIn);
         this.spectatorGui = new GuiSpectator(mcIn);
         this.persistantChatGUI = new GuiNewChat(mcIn);
-        this.streamIndicator = new GuiStreamIndicator(mcIn);
         this.overlayPlayerList = new GuiPlayerTabOverlay(mcIn, this);
         this.setDefaultTitlesTimes();
     }
@@ -541,11 +532,6 @@ public class GuiIngame extends Gui
         {
             return true;
         }
-    }
-
-    public void renderStreamIndicator(ScaledResolution scaledRes)
-    {
-        this.streamIndicator.render(scaledRes.getScaledWidth() - 10, 10);
     }
 
     private void renderScoreboard(ScoreObjective objective, ScaledResolution scaledRes)
@@ -1084,7 +1070,6 @@ public class GuiIngame extends Gui
         }
 
         ++this.updateCounter;
-        this.streamIndicator.updateStreamAlpha();
 
         if (this.mc.thePlayer != null)
         {

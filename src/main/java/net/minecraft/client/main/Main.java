@@ -4,6 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.properties.PropertyMap.Serializer;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Session;
+
 import java.io.File;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
@@ -11,11 +17,6 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.util.List;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Session;
 
 public class Main
 {
@@ -102,13 +103,6 @@ public class Main
         Integer integer = (Integer)optionset.valueOf(optionspec1);
         Session session = new Session((String)optionspec9.value(optionset), s4, (String)optionspec11.value(optionset), (String)optionspec18.value(optionset));
         GameConfiguration gameconfiguration = new GameConfiguration(new GameConfiguration.UserInformation(session, propertymap, propertymap1, proxy), new GameConfiguration.DisplayInformation(i, j, flag, flag1), new GameConfiguration.FolderInformation(file1, file3, file2, s5), new GameConfiguration.GameInformation(flag2, s3), new GameConfiguration.ServerInformation(s6, integer.intValue()));
-        Runtime.getRuntime().addShutdownHook(new Thread("Client Shutdown Thread")
-        {
-            public void run()
-            {
-                Minecraft.stopIntegratedServer();
-            }
-        });
         Thread.currentThread().setName("Client thread");
         (new Minecraft(gameconfiguration)).run();
     }

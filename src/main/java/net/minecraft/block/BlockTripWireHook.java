@@ -1,7 +1,6 @@
 package net.minecraft.block;
 
-import com.google.common.base.Objects;
-import java.util.Random;
+import com.google.common.base.MoreObjects;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
@@ -19,15 +18,15 @@ import net.minecraft.util.EnumWorldBlockLayer;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockTripWireHook extends Block
-{
+import java.util.Random;
+
+public class BlockTripWireHook extends Block {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     public static final PropertyBool POWERED = PropertyBool.create("powered");
     public static final PropertyBool ATTACHED = PropertyBool.create("attached");
     public static final PropertyBool SUSPENDED = PropertyBool.create("suspended");
 
-    public BlockTripWireHook()
-    {
+    public BlockTripWireHook() {
         super(Material.circuits);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(POWERED, Boolean.valueOf(false)).withProperty(ATTACHED, Boolean.valueOf(false)).withProperty(SUSPENDED, Boolean.valueOf(false)));
         this.setCreativeTab(CreativeTabs.tabRedstone);
@@ -161,7 +160,7 @@ public class BlockTripWireHook extends Block
             {
                 if (j == p_176260_6_)
                 {
-                    iblockstate = (IBlockState)Objects.firstNonNull(p_176260_7_, iblockstate);
+                    iblockstate = (IBlockState) MoreObjects.firstNonNull(p_176260_7_, iblockstate);
                 }
 
                 boolean flag5 = !((Boolean)iblockstate.getValue(BlockTripWire.DISARMED)).booleanValue();

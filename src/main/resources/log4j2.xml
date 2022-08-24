@@ -16,9 +16,9 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="debug">
             <filters>
-                <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
+                <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>
             <AppenderRef ref="SysOut"/>
             <AppenderRef ref="File"/>

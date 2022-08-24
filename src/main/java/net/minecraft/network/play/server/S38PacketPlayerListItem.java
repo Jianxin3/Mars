@@ -1,11 +1,9 @@
 package net.minecraft.network.play.server;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import java.io.IOException;
-import java.util.List;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
@@ -13,13 +11,14 @@ import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.WorldSettings;
 
-public class S38PacketPlayerListItem implements Packet<INetHandlerPlayClient>
-{
+import java.io.IOException;
+import java.util.List;
+
+public class S38PacketPlayerListItem implements Packet<INetHandlerPlayClient> {
     private S38PacketPlayerListItem.Action action;
     private final List<S38PacketPlayerListItem.AddPlayerData> players = Lists.<S38PacketPlayerListItem.AddPlayerData>newArrayList();
 
-    public S38PacketPlayerListItem()
-    {
+    public S38PacketPlayerListItem() {
     }
 
     public S38PacketPlayerListItem(S38PacketPlayerListItem.Action actionIn, EntityPlayerMP... players)
@@ -216,7 +215,7 @@ public class S38PacketPlayerListItem implements Packet<INetHandlerPlayClient>
 
     public String toString()
     {
-        return Objects.toStringHelper(this).add("action", this.action).add("entries", this.players).toString();
+        return MoreObjects.toStringHelper(this).add("action", this.action).add("entries", this.players).toString();
     }
 
     public static enum Action
@@ -265,7 +264,7 @@ public class S38PacketPlayerListItem implements Packet<INetHandlerPlayClient>
 
         public String toString()
         {
-            return Objects.toStringHelper(this).add("latency", this.ping).add("gameMode", this.gamemode).add("profile", this.profile).add("displayName", this.displayName == null ? null : IChatComponent.Serializer.componentToJson(this.displayName)).toString();
+            return MoreObjects.toStringHelper(this).add("latency", this.ping).add("gameMode", this.gamemode).add("profile", this.profile).add("displayName", this.displayName == null ? null : IChatComponent.Serializer.componentToJson(this.displayName)).toString();
         }
     }
 }

@@ -2,8 +2,6 @@ package net.minecraft.client.gui;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import java.util.List;
-import java.util.Map.Entry;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
@@ -12,19 +10,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.FrameTimer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.*;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+
+import java.util.List;
+import java.util.Map.Entry;
 
 public class GuiOverlayDebug extends Gui
 {
@@ -139,23 +134,7 @@ public class GuiOverlayDebug extends Gui
                 list.add("Biome: " + chunk.getBiome(blockpos, this.mc.theWorld.getWorldChunkManager()).biomeName);
                 list.add("Light: " + chunk.getLightSubtracted(blockpos, 0) + " (" + chunk.getLightFor(EnumSkyBlock.SKY, blockpos) + " sky, " + chunk.getLightFor(EnumSkyBlock.BLOCK, blockpos) + " block)");
                 DifficultyInstance difficultyinstance = this.mc.theWorld.getDifficultyForLocation(blockpos);
-
-                if (this.mc.isIntegratedServerRunning() && this.mc.getIntegratedServer() != null)
-                {
-                    EntityPlayerMP entityplayermp = this.mc.getIntegratedServer().getConfigurationManager().getPlayerByUUID(this.mc.thePlayer.getUniqueID());
-
-                    if (entityplayermp != null)
-                    {
-                        difficultyinstance = entityplayermp.worldObj.getDifficultyForLocation(new BlockPos(entityplayermp));
-                    }
-                }
-
                 list.add(String.format("Local Difficulty: %.2f (Day %d)", new Object[] {Float.valueOf(difficultyinstance.getAdditionalDifficulty()), Long.valueOf(this.mc.theWorld.getWorldTime() / 24000L)}));
-            }
-
-            if (this.mc.entityRenderer != null && this.mc.entityRenderer.isShaderActive())
-            {
-                list.add("Shader: " + this.mc.entityRenderer.getShaderGroup().getShaderGroupName());
             }
 
             if (this.mc.objectMouseOver != null && this.mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && this.mc.objectMouseOver.getBlockPos() != null)

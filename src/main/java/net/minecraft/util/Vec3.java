@@ -1,14 +1,21 @@
 package net.minecraft.util;
 
-public class Vec3
-{
-    /** X coordinate of Vec3D */
+public class Vec3 {
+    public static final Vec3 ZERO = new Vec3(0d, 0d, 0d);
+
+    /**
+     * X coordinate of Vec3D
+     */
     public final double xCoord;
 
-    /** Y coordinate of Vec3D */
+    /**
+     * Y coordinate of Vec3D
+     */
     public final double yCoord;
 
-    /** Z coordinate of Vec3D */
+    /**
+     * Z coordinate of Vec3D
+     */
     public final double zCoord;
 
     public Vec3(double x, double y, double z)
